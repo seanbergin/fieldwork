@@ -229,7 +229,7 @@ artifact-distribution
 @#$#@#$#@
 ## WHAT IS IT?
 
-(a general understanding of what the model is trying to show or explain)
+I AM CHANGING THIS PART HERE BECAUSE IT DOES NOT AFFECT THE CODEEEEEEEEEEEEEEEE!!
 
 ## HOW IT WORKS
 
