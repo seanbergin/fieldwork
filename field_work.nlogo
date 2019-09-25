@@ -229,8 +229,6 @@ artifact-distribution
 @#$#@#$#@
 ## WHAT IS IT?
 
-I AM CHANGING THIS PART HERE BECAUSE IT DOES NOT AFFECT THE CODEEEEEEEEEEEEEEEE!!
-
 ## HOW IT WORKS
 
 (what rules the agents use to create the overall behavior of the model)
