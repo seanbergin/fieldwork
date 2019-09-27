@@ -37,7 +37,7 @@ to setup
       let open-patches (patch-set (patches with [patches != nobody]) )
       move-to one-of open-patches
       set size 15
-      set shape "bulldozer top"
+      set shape ""
       set color red
     ]
   ]
