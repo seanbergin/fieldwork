@@ -89,10 +89,16 @@ to setup-archaeologists
   create-archaeologists 1[
     move-to one-of dig-houses
     set grant-funding 100
-    set size 15
-    set color yellow
-    set shape "person"
+       ifelse survey-type = "Horse Based Survey" ;;If Hor Based Survey selected from dropdown, set style to horse--well, moose style. Why is there no horse shape? Moose is better anyways.
+         [set shape "moose"
+          set size 30
+          set color 33]
+         [set shape "person"                     ;;else set style to person
+          set size 15
+          set color yellow]
     set lithics-found []
+
+
   ]
 
 end
@@ -112,7 +118,9 @@ to-report random-survey
     move-to one-of neighbors
     let artifacts [number-of-lithic-artifacts] of patch-here
     ask patch-here [set number-of-lithic-artifacts 0]
-    report artifacts
+
+  report artifacts
+
 end
 
 to-report systematic-survey
@@ -131,11 +139,26 @@ to-report experienced-survey
 
 end
 
-to-report horse-survey
+to-report horse-survey ;;cover twice as many patches per tick, but only collect 25% of artifacts
 
-  let artifacts 0
+  let artifact1 (0)
+  let artifact2 (0)
+  let artifacts (0)
 
+
+    move-to one-of neighbors ;;move 1
+    set artifact1 round ([number-of-lithic-artifacts] of patch-here * .25 ) ;;set artifacts to 1/4 of artifacts on patch (to the nearest whole number)
+    ask patch-here [set number-of-lithic-artifacts (number-of-lithic-artifacts * .75)] ;;;set artifacts to 3/4 of artifacts previously on patch (to the nearest whole number)
+
+    move-to one-of neighbors ;;move 2
+    set artifact2 round ([number-of-lithic-artifacts] of patch-here * .25 ) ;;set artifacts to 1/4 of artifacts on patch (to the nearest whole number)
+    ask patch-here [set number-of-lithic-artifacts (number-of-lithic-artifacts * .75)] ;;;set artifacts to 3/4 of artifacts previously on patch (to the nearest whole number)
+
+  set artifacts (artifact1 + artifact2)
   report artifacts
+
+
+
 
 end
 
@@ -152,6 +175,7 @@ to bulldoze  ;; destroys the artifacts on the patches the bulldozer moves to at 
   ask patch-here [set number-of-lithic-artifacts 0]
     set movement movement + 1 ]
 end
+
 @#$#@#$#@
 GRAPHICS-WINDOW
 258
@@ -222,7 +246,7 @@ CHOOSER
 survey-type
 survey-type
 "Random Survey" "Systematic Survey" "Experienced Survey" "Lidar Survey" "Horse Based Survey"
-0
+4
 
 INPUTBOX
 6
@@ -252,9 +276,26 @@ SWITCH
 270
 add-bulldozer
 add-bulldozer
-0
+1
 1
 -1000
+
+BUTTON
+134
+410
+197
+443
+NIL
+go
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -510,6 +551,16 @@ true
 0
 Line -7500403 true 150 0 150 150
 
+moose
+false
+0
+Polygon -7500403 true true 196 228 198 297 180 297 178 244 166 213 136 213 106 213 79 227 73 259 50 257 49 229 38 197 26 168 26 137 46 120 101 122 147 102 181 111 217 121 256 136 294 151 286 169 256 169 241 198 211 188
+Polygon -7500403 true true 74 258 87 299 63 297 49 256
+Polygon -7500403 true true 25 135 15 186 10 200 23 217 25 188 35 141
+Polygon -7500403 true true 270 150 253 100 231 94 213 100 208 135
+Polygon -7500403 true true 225 120 204 66 207 29 185 56 178 27 171 59 150 45 165 90
+Polygon -7500403 true true 225 120 249 61 241 31 265 56 272 27 280 59 300 45 285 90
+
 pentagon
 false
 0
@@ -649,7 +700,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.1.0
+NetLogo 6.0.4
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
