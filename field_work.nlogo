@@ -19,10 +19,6 @@ archaeologists-own[
 
 ]
 
-bulldozers-own [
-  lithics-destroyed
-]
-
 to setup
   clear-all
   RESET-TICKS
