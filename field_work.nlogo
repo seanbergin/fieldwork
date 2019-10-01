@@ -1,15 +1,15 @@
 breed [archaeologists archaeologist]
 breed [dig-houses dig-house]
-breed [airplanes airplane]
+breed [airplanes airplane] ; create airplane for lidar survey
 
 globals [
-
+  ;  known-patches ; variable used to store patches where the artifact counts are known
 
 ]
 
 patches-own [
   number-of-lithic-artifacts
-
+  known? ; whether the archaeologist knows the contents of this patch
 
 ]
 
@@ -19,7 +19,6 @@ archaeologists-own[
 
 ]
 
-airplanes-own [airplane-counter] ; remove airplane after it has made a pass
 
 to setup
   clear-all
@@ -29,7 +28,7 @@ to setup
   set-default-shape dig-houses "house"
   create-dig-houses 1 [ set size 15]
   setup-archaeologists
-  setup-lidar
+  if survey-type = "Lidar Survey" [setup-lidar]
 
 
 
@@ -40,14 +39,8 @@ to go
 
 
   ifelse (ticks < number-of-field-seasons)[
+    if survey-type = "Lidar Survey" [move-airplane] ; procedure to move airplane if lidar survey is selected
     ask archaeologists [collect-artifacts]
-    ask airplanes
-    [
-      set airplane-counter (airplane-counter + 1)
-      fd 15
-      if airplane-counter > 32
-      [die]
-    ]
 
     ask patches [ set pcolor scale-color green number-of-lithic-artifacts 0 100]  ;; re-color the landscape
     tick
@@ -70,7 +63,7 @@ to collect-artifacts
     if survey-type = "Systematic Survey" [set lithics-collected lithics-collected + systematic-survey]
     if survey-type = "Experienced Survey" [set lithics-collected lithics-collected + experienced-survey]
     if survey-type = "Horse Based Survey" [set lithics-collected lithics-collected + horse-survey]
-    if survey-type = "Lidar Survey" [set lithics-collected lithics-collected + lidar-survey]
+    if survey-type = "Lidar Survey" [set lithics-collected lithics-collected + lidar-survey] ; run lidar procedure
 
     set surveyed surveyed + 1
   ]
@@ -136,21 +129,44 @@ to-report horse-survey
 end
 
 to-report lidar-survey
-  let artifacts 0
-
+  let my-survey patches with [known? = true]
+  move-to one-of my-survey with-max [number-of-lithic-artifacts]
+  let artifacts [number-of-lithic-artifacts] of patch-here
+  ask patch-here [set number-of-lithic-artifacts 0]
   report artifacts
 end
-to setup-lidar
-  if survey-type = "Lidar Survey" [
-    create-airplanes 1
-    [
-      set shape "airplane"
-      setxy -250 random-ycor
-      set color yellow
-      set size 50
-      set heading 90
-    ]
+
+to setup-lidar ; procedure to setup lidar survey
+  create-airplanes 1
+  [
+    set shape "airplane"
+    setxy -250 random-ycor
+    set color orange
+    set size 50
+    set heading 90
   ]
+end
+
+to move-airplane ; procedure to move airplane if lidar survey is selected
+  let r 5 ; radius the plane can see
+  ask airplanes
+  [
+    set pen-size 1 ; choose pen size to track movement
+    pd ; track airplanes movement
+  ]
+  if any? airplanes [while [[xcor] of one-of airplanes < 250] ; stop survey when the other side of the world is reached
+    [
+      ask airplanes
+      [
+        fd .01
+        ask patches in-radius r [set known? true]
+      ]
+      tick
+    ]
+    ask airplanes [die]
+    reset-ticks
+  ]
+  ;        print max [number-of-lithic-artifacts] of known-patches
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -230,7 +246,7 @@ INPUTBOX
 145
 177
 number-of-field-seasons
-50.0
+10.0
 1
 0
 Number
