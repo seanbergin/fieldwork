@@ -1,5 +1,6 @@
 breed [archaeologists archaeologist]
 breed [dig-houses dig-house]
+breed [bulldozers bulldozer]
 breed [airplanes airplane] ; create airplane for lidar survey
 
 globals [
@@ -28,7 +29,15 @@ to setup
   create-dig-houses 1 [ set size 15]
   setup-archaeologists
   if survey-type = "Lidar Survey" [setup-lidar]
-
+  if add-bulldozer [ ;; adds a bulldozer to the interface if desired on the add-bulldozer switch
+    create-bulldozers 1 [
+      let open-patches (patch-set (patches with [patches != nobody]) )
+      move-to one-of open-patches
+      set size 15
+      set shape "bulldozer top"
+      set color red
+    ]
+  ]
 
 
 end
@@ -40,7 +49,7 @@ to go
   ifelse (ticks < number-of-field-seasons)[
     if survey-type = "Lidar Survey" [move-airplane] ; procedure to move airplane if lidar survey is selected
     ask archaeologists [collect-artifacts]
-
+    ask bulldozers [bulldoze] ;; asks bulldozers to bulldoze
     ask patches [ set pcolor scale-color green number-of-lithic-artifacts 0 100]  ;; re-color the landscape
     tick
   ]
@@ -77,9 +86,23 @@ to setup-archaeologists
   create-archaeologists 1[
     move-to one-of dig-houses
     set grant-funding 100
+    ifelse survey-type = "Horse Based Survey" ;;If Horse Based Survey selected from dropdown, set style to horse--well, moose style. Why is there no horse shape? Moose is better anyways.
+      [set shape "moose"
+        set size 30
+        set color 33]
+    [set shape "person"                     ;;else set style to person
+      set size 15
+      set color yellow]
     set size 15
     set color yellow
     set shape "person"
+    ifelse survey-type = "Horse Based Survey" ;;If Horse Based Survey selected from dropdown, set style to horse--well, moose style. Why is there no horse shape? Moose is better anyways.
+    [set shape "moose"
+      set size 30
+      set color 33]
+    [set shape "person"                     ;;else set style to person
+      set size 15
+      set color yellow]
     set lithics-found []
   ]
 
@@ -119,9 +142,20 @@ to-report experienced-survey
 
 end
 
-to-report horse-survey
+to-report horse-survey ;;cover twice as many patches per tick, but only collect 25% of artifacts
+  let artifact1 (0)
+  let artifact2 (0)
+  let artifacts (0)
 
-  let artifacts 0
+
+  move-to one-of neighbors ;;move 1
+  set artifact1 round ([number-of-lithic-artifacts] of patch-here * .25 ) ;;set artifacts to 1/4 of artifacts on patch (to the nearest whole number)
+  ask patch-here [set number-of-lithic-artifacts (number-of-lithic-artifacts * .75)] ;;;set artifacts to 3/4 of artifacts previously on patch (to the nearest whole number)
+
+  move-to one-of neighbors ;;move 2
+  set artifact2 round ([number-of-lithic-artifacts] of patch-here * .25 ) ;;set artifacts to 1/4 of artifacts on patch (to the nearest whole number)
+  ask patch-here [set number-of-lithic-artifacts (number-of-lithic-artifacts * .75)] ;;;set artifacts to 3/4 of artifacts previously on patch (to the nearest whole number)
+  set artifacts (artifact1 + artifact2)
 
   report artifacts
 
@@ -133,6 +167,14 @@ to-report lidar-survey
   let artifacts [number-of-lithic-artifacts] of patch-here
   ask patch-here [set number-of-lithic-artifacts 0]
   report artifacts
+end
+
+to bulldoze  ;; destroys the artifacts on the patches the bulldozer moves to at the same rate as the archaeologist if grant-funding is not altered
+  let movement 0
+  while [movement < 100] [
+    move-to one-of neighbors
+    ask patch-here [set number-of-lithic-artifacts 0]
+    set movement movement + 1 ]
 end
 
 to setup-lidar ; procedure to setup lidar survey
@@ -236,7 +278,7 @@ CHOOSER
 survey-type
 survey-type
 "Random Survey" "Systematic Survey" "Experienced Survey" "Lidar Survey" "Horse Based Survey"
-0
+3
 
 INPUTBOX
 6
@@ -244,7 +286,7 @@ INPUTBOX
 145
 177
 number-of-field-seasons
-10.0
+50.0
 1
 0
 Number
@@ -258,6 +300,17 @@ artifact-distribution
 artifact-distribution
 "Random" "Clustered"
 0
+
+SWITCH
+5
+237
+151
+270
+add-bulldozer
+add-bulldozer
+0
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -327,6 +380,38 @@ Circle -7500403 true true 110 127 80
 Circle -7500403 true true 110 75 80
 Line -7500403 true 150 100 80 30
 Line -7500403 true 150 100 220 30
+
+bulldozer top
+true
+0
+Rectangle -7500403 true true 195 60 255 255
+Rectangle -16777216 false false 195 60 255 255
+Rectangle -7500403 true true 45 60 105 255
+Rectangle -16777216 false false 45 60 105 255
+Line -16777216 false 45 75 255 75
+Line -16777216 false 45 105 255 105
+Line -16777216 false 45 60 255 60
+Line -16777216 false 45 240 255 240
+Line -16777216 false 45 225 255 225
+Line -16777216 false 45 195 255 195
+Line -16777216 false 45 150 255 150
+Polygon -1184463 true true 90 60 75 90 75 240 120 255 180 255 225 240 225 90 210 60
+Polygon -16777216 false false 225 90 210 60 211 246 225 240
+Polygon -16777216 false false 75 90 90 60 89 246 75 240
+Polygon -16777216 false false 89 247 116 254 183 255 211 246 211 211 90 210
+Rectangle -16777216 false false 90 60 210 90
+Rectangle -1184463 true true 180 30 195 90
+Rectangle -16777216 false false 105 30 120 90
+Rectangle -1184463 true true 105 45 120 90
+Rectangle -16777216 false false 180 45 195 90
+Polygon -16777216 true false 195 105 180 120 120 120 105 105
+Polygon -16777216 true false 105 199 120 188 180 188 195 199
+Polygon -16777216 true false 195 120 180 135 180 180 195 195
+Polygon -16777216 true false 105 120 120 135 120 180 105 195
+Line -1184463 true 105 165 195 165
+Circle -16777216 true false 113 226 14
+Polygon -1184463 true true 105 15 60 30 60 45 240 45 240 30 195 15
+Polygon -16777216 false false 105 15 60 30 60 45 240 45 240 30 195 15
 
 butterfly
 true
@@ -480,6 +565,16 @@ line half
 true
 0
 Line -7500403 true 150 0 150 150
+
+moose
+false
+0
+Polygon -7500403 true true 196 228 198 297 180 297 178 244 166 213 136 213 106 213 79 227 73 259 50 257 49 229 38 197 26 168 26 137 46 120 101 122 147 102 181 111 217 121 256 136 294 151 286 169 256 169 241 198 211 188
+Polygon -7500403 true true 74 258 87 299 63 297 49 256
+Polygon -7500403 true true 25 135 15 186 10 200 23 217 25 188 35 141
+Polygon -7500403 true true 270 150 253 100 231 94 213 100 208 135
+Polygon -7500403 true true 225 120 204 66 207 29 185 56 178 27 171 59 150 45 165 90
+Polygon -7500403 true true 225 120 249 61 241 31 265 56 272 27 280 59 300 45 285 90
 
 pentagon
 false
