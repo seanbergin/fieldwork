@@ -43,9 +43,9 @@ to go
     ask archaeologists [collect-artifacts]
     ask airplanes
     [
-      set airplane-counter (airplane-counter + 1)
+      let airplane-counter (airplane-counter + 1)
+      if airplane-counter
       fd 15
-      if airplane-counter > 32
       [die]
     ]
 
