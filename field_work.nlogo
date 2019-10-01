@@ -3,7 +3,7 @@ breed [dig-houses dig-house]
 breed [airplanes airplane] ; create airplane for lidar survey
 
 globals [
-  ;  known-patches ; variable used to store patches where the artifact counts are known
+
 
 ]
 
@@ -24,7 +24,6 @@ to setup
   clear-all
   RESET-TICKS
   setup-landscape
-
   set-default-shape dig-houses "house"
   create-dig-houses 1 [ set size 15]
   setup-archaeologists
@@ -137,13 +136,13 @@ to-report lidar-survey
 end
 
 to setup-lidar ; procedure to setup lidar survey
-  create-airplanes 1
+  create-airplanes 1 ; create one airplane
   [
-    set shape "airplane"
-    setxy -250 random-ycor
-    set color orange
-    set size 50
-    set heading 90
+    set shape "airplane" ; make it look like an airplane
+    setxy -250 random-ycor ; set it to always start on the left but at a random y coordinate
+    set color orange ; make it really easy to see
+    set size 50 ; make it really big
+    set heading 90 ; always heading to the right of the screen
   ]
 end
 
@@ -158,15 +157,14 @@ to move-airplane ; procedure to move airplane if lidar survey is selected
     [
       ask airplanes
       [
-        fd .01
-        ask patches in-radius r [set known? true]
+        fd .01 ; move airplane, but slow enough to see
+        ask patches in-radius r [set known? true] ; change known? variable to true for all variables in the plane's radius
       ]
-      tick
+      tick ; move it along
     ]
-    ask airplanes [die]
-    reset-ticks
+    ask airplanes [die] ; airplane crashes and burns when it has made a pass
+    reset-ticks ; reset the ticks so the field seasons don't start at some massibe number
   ]
-  ;        print max [number-of-lithic-artifacts] of known-patches
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -238,7 +236,7 @@ CHOOSER
 survey-type
 survey-type
 "Random Survey" "Systematic Survey" "Experienced Survey" "Lidar Survey" "Horse Based Survey"
-3
+0
 
 INPUTBOX
 6
