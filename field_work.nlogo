@@ -17,7 +17,6 @@ patches-own [
 archaeologists-own[
   lithics-found ;; list of artifact totals recorded each season
   grant-funding ;; number of survey patches the archaeologist can explore in a field season
-
 ]
 
 
@@ -39,25 +38,22 @@ to setup
     ]
   ]
 
-
 end
 
 
 to go
-
 
   ifelse (ticks < number-of-field-seasons)[
     if survey-type = "Lidar Survey" [move-airplane] ; procedure to move airplane if lidar survey is selected
     ask archaeologists [collect-artifacts]
     ask bulldozers [bulldoze] ;; asks bulldozers to bulldoze
     ask patches [ set pcolor scale-color green number-of-lithic-artifacts 0 100]  ;; re-color the landscape
+
+    if funding [ setup-funding ] ;; sets up funding if the funding switch is on
     tick
   ]
+
   [ STOP ]
-
-
-
-
 
 end
 
@@ -70,7 +66,7 @@ to collect-artifacts
     if survey-type = "Random Survey" [ set lithics-collected lithics-collected + random-survey]
     if survey-type = "Systematic Survey" [set lithics-collected lithics-collected + systematic-survey]
     if survey-type = "Experienced Survey" [set lithics-collected lithics-collected + experienced-survey]
-    if survey-type = "Horse Based Survey" [set lithics-collected lithics-collected + horse-survey]
+    if survey-type = "Moose Based Survey" [set lithics-collected lithics-collected + horse-survey]
     if survey-type = "Lidar Survey" [set lithics-collected lithics-collected + lidar-survey] ; run lidar procedure
 
     set surveyed surveyed + 1
@@ -81,12 +77,24 @@ to collect-artifacts
 
 end
 
+
+to setup-funding ;; CH ;; set up funding
+
+  ask archaeologists [
+    ifelse sum lithics-found < 0.25 * (sum [number-of-lithic-artifacts] of patches + sum lithics-found) ;; if the sum of artifacts found is less than 25% of total artifacts...
+    [set grant-funding (grant-funding * 0.9)] ;; decrease funding by 10%
+    [set grant-funding (grant-funding * 1.1)] ;; else increase funding by 10%
+  ]
+
+end
+
+
 to setup-archaeologists
 
   create-archaeologists 1[
     move-to one-of dig-houses
     set grant-funding 100
-    ifelse survey-type = "Horse Based Survey" ;;If Horse Based Survey selected from dropdown, set style to horse--well, moose style. Why is there no horse shape? Moose is better anyways.
+    ifelse survey-type = "Moose Based Survey" ;;If Horse Based Survey selected from dropdown, set style to horse--well, moose style. Why is there no horse shape? Moose is better anyways.
       [set shape "moose"
         set size 30
         set color 33]
@@ -96,7 +104,7 @@ to setup-archaeologists
     set size 15
     set color yellow
     set shape "person"
-    ifelse survey-type = "Horse Based Survey" ;;If Horse Based Survey selected from dropdown, set style to horse--well, moose style. Why is there no horse shape? Moose is better anyways.
+    ifelse survey-type = "Moose Based Survey" ;;If Horse Based Survey selected from dropdown, set style to horse--well, moose style. Why is there no horse shape? Moose is better anyways.
     [set shape "moose"
       set size 30
       set color 33]
@@ -277,8 +285,8 @@ CHOOSER
 106
 survey-type
 survey-type
-"Random Survey" "Systematic Survey" "Experienced Survey" "Lidar Survey" "Horse Based Survey"
-3
+"Random Survey" "Systematic Survey" "Experienced Survey" "Lidar Survey" "Moose Based Survey"
+4
 
 INPUTBOX
 6
@@ -286,7 +294,7 @@ INPUTBOX
 145
 177
 number-of-field-seasons
-50.0
+100.0
 1
 0
 Number
@@ -308,6 +316,17 @@ SWITCH
 270
 add-bulldozer
 add-bulldozer
+0
+1
+-1000
+
+SWITCH
+8
+283
+140
+316
+funding
+funding
 0
 1
 -1000
