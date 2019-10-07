@@ -2,16 +2,17 @@ breed [archaeologists archaeologist]
 breed [dig-houses dig-house]
 breed [bulldozers bulldozer]
 breed [airplanes airplane] ; create airplane for lidar survey
+breed [snakes snake]; MDB created to add snakes
 
 globals [
-
+surveyed
 
 ]
 
 patches-own [
   number-of-lithic-artifacts
   known? ; whether the archaeologist knows the contents of this patch
-
+  snake? ;; MDB patch variable that says there is a snake on that patch
 ]
 
 archaeologists-own[
@@ -37,7 +38,7 @@ to setup
       set color red
     ]
   ]
-
+  if add-snakes [ setup-snakes ]     ;; MDB adds snakes if snake switch is one
 end
 
 
@@ -48,17 +49,19 @@ to go
     ask archaeologists [collect-artifacts]
     ask bulldozers [bulldoze] ;; asks bulldozers to bulldoze
     ask patches [ set pcolor scale-color green number-of-lithic-artifacts 0 100]  ;; re-color the landscape
+      if funding [ setup-funding ] ;; sets up funding if the funding switch is on
+      tick
 
-    if funding [ setup-funding ] ;; sets up funding if the funding switch is on
-    tick
   ]
 
   [ STOP ]
 
+
 end
 
+
 to collect-artifacts
-  let surveyed 0
+  set surveyed 0
   let lithics-collected 0
 
   while [surveyed < grant-funding] [
@@ -71,7 +74,6 @@ to collect-artifacts
 
     set surveyed surveyed + 1
   ]
-
   set lithics-found lput lithics-collected lithics-found
 
 
@@ -86,6 +88,17 @@ to setup-funding ;; CH ;; set up funding
     [set grant-funding (grant-funding * 1.1)] ;; else increase funding by 10%
   ]
 
+end
+
+to setup-snakes ;; MDB add snakes randomly to the world if switch is on. use slider to determine number of snakes
+  ask patches [ if random 100 < snake-likelihood ;; MDB if this random integer generated is less than the slider value, then do the rest. right now probability is the slider
+    [set snake? true                            ;; MDB sets patch variable of snake? to true if there is a snake on that patch
+     sprout-snakes 1
+    [ set shape "triangle"
+      set size 5
+      set color red
+
+  ]]]
 end
 
 
@@ -127,11 +140,15 @@ to setup-landscape
 
 end
 
-to-report random-survey
+to-report random-survey   ;;right now, steps are being taken because there is funding. make it so snake = no funding and stops field season
   move-to one-of neighbors
-  let artifacts [number-of-lithic-artifacts] of patch-here
+  ifelse snake? = true [
+    set surveyed grant-funding
+    report 0
+  ]
+    [let artifacts [number-of-lithic-artifacts] of patch-here
   ask patch-here [set number-of-lithic-artifacts 0]
-  report artifacts
+    report artifacts]
 end
 
 to-report systematic-survey
@@ -286,7 +303,7 @@ CHOOSER
 survey-type
 survey-type
 "Random Survey" "Systematic Survey" "Experienced Survey" "Lidar Survey" "Moose Based Survey"
-4
+0
 
 INPUTBOX
 6
@@ -330,6 +347,32 @@ funding
 0
 1
 -1000
+
+SWITCH
+8
+328
+127
+361
+add-snakes
+add-snakes
+0
+1
+-1000
+
+SLIDER
+8
+415
+180
+448
+snake-likelihood
+snake-likelihood
+0
+100
+33.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
